@@ -25,7 +25,7 @@ public record DoctorProfileCreateResource(
         String specialty,
         @NotBlank
         @Size(min = 5, max = 50)
-        String CMPCode,
+        String CPMCode,
         @NotBlank
         String photoUrl
 ) {

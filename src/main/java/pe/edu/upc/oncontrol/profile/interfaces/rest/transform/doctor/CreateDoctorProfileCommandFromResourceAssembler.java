@@ -14,7 +14,7 @@ public class CreateDoctorProfileCommandFromResourceAssembler {
                 resource.documentType(),
                 resource.documentNumber(),
                 resource.specialty(),
-                resource.CMPCode(),
+                resource.CPMCode(),
                 resource.photoUrl()
         );
     }
