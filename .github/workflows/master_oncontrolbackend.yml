@@ -60,5 +60,16 @@ jobs:
         with:
           app-name: 'oncontrolbackend'
           slot-name: 'Production'
+    env:
+  spring.datasource.url: ${{ secrets.AZURE_MYSQL_CONNECTIONSTRING }}
+  spring.datasource.username: ${{ secrets.AZURE_MYSQL_USERNAME }}
+  spring.datasource.password: ${{ secrets.AZURE_MYSQL_PASSWORD }}
+  authorization.jwt.secret: ${{ secrets.JWT_SECRET }}
+  authorization.jwt.expiration.days: '7'
+  aws.region: ${{ secrets.AWS_REGION }}
+  aws.s3.bucket: ${{ secrets.AWS_BUCKET }}
+  aws.credentials.accessKey: ${{ secrets.AWS_ACCESS_KEY }}
+  aws.credentials.secretKey: ${{ secrets.AWS_SECRET_KEY }}
+
           package: java-app/*.jar
           
