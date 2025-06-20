@@ -28,6 +28,9 @@ jobs:
         run: mvn clean install
         env:
           AZURE_MYSQL_CONNECTIONSTRING: ${{ secrets.AZURE_MYSQL_CONNECTIONSTRING }}
+          AZURE_URL: ${{ secrets.AZURE_URL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          USER: ${{ secrets.USER }}
           AUTHORIZATION_JWT_SECRET: ${{ secrets.AUTHORIZATION_JWT_SECRET }}
           AUTHORIZATION_JWT_EXPIRATION_DAYS: ${{ secrets.AUTHORIZATION_JWT_EXPIRATION_DAYS }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
