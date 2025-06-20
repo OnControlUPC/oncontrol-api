@@ -26,6 +26,8 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean install
+        env:
+          AZURE_MYSQL_CONNECTIONSTRING: ${{ secrets.AZURE_MYSQL_CONNECTIONSTRING }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
