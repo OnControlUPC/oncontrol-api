@@ -16,8 +16,7 @@ public class AddProcedureAssembler {
                 resource.recurrenceType(),
                 resource.interval(),
                 resource.totalOccurrences(),
-                resource.untilDate(),
-                resource.firstExecutionTime()
+                resource.untilDate()
         );
     }
 }
