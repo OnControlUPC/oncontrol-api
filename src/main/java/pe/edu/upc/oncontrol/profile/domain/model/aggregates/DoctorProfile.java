@@ -45,9 +45,9 @@ public class DoctorProfile extends AuditableAbstractAggregateRoot<DoctorProfile>
     public DoctorProfile(){
     }
 
-    public DoctorProfile(CreateDoctorProfileCommand command){
+    public DoctorProfile(Long userId, CreateDoctorProfileCommand command){
         this.uuid = UUID.randomUUID();
-        this.userId = command.userId();
+        this.userId = userId;
         this.fullName = new FullName(command.firstName(), command.lastName());
         this.contactInfo = new ContactInfo(command.email(), command.phoneNumber());
         this.documentIdent = new DocumentIdent(command.documentType(), command.documentNumber());

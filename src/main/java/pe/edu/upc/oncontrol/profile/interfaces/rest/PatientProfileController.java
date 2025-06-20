@@ -44,9 +44,9 @@ public class PatientProfileController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_PATIENT')")
-    public ResponseEntity<PatientProfileViewResource> create(@Valid @RequestBody PatientProfileCreateResource resource) {
+    public ResponseEntity<PatientProfileViewResource> create(@Valid @RequestBody PatientProfileCreateResource resource, HttpServletRequest request) {
         CreatePatientProfileCommand command = CreatePatientProfileCommandFromResourceAssembler.toCommandFromResource(resource);
-        PatientProfile created = patientProfileCommandService.createProfile(command);
+        PatientProfile created = patientProfileCommandService.createProfile(command, request);
         PatientProfileViewResource view = PatientProfileToResourceAssembler.toResourceFromEntity(created);
         return new ResponseEntity<>(view, HttpStatus.CREATED);
     }

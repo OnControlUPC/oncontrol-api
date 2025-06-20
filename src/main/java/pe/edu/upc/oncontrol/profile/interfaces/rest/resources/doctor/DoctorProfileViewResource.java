@@ -11,7 +11,7 @@ public record DoctorProfileViewResource(
         String documentType,
         String documentNumber,
         String specialty,
-        String CPMCode,
+        String CMPCode,
         String urlPhoto,
         boolean active
 ) {

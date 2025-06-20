@@ -41,9 +41,9 @@ public class PatientProfile extends AuditableAbstractAggregateRoot<PatientProfil
 
     }
 
-    public PatientProfile(CreatePatientProfileCommand command){
+    public PatientProfile(Long userId, CreatePatientProfileCommand command){
         this.uuid = UUID.randomUUID();
-        this.userId = command.userId();
+        this.userId = userId;
         this.fullName = new FullName(command.firstName(), command.lastName());
         this.contactInfo = new ContactInfo(command.email(), command.phoneNumber());
         this.birthDate = LocalDate.parse(command.birthDate());
