@@ -1,7 +1,5 @@
 package pe.edu.upc.oncontrol.communication.interfaces.rest;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -11,19 +9,16 @@ import pe.edu.upc.oncontrol.communication.domain.services.ChatMessageCommandServ
 import pe.edu.upc.oncontrol.communication.interfaces.rest.resources.ChatMessageRequest;
 
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
 
 @Controller
 public class ChatWebSocketController {
     private final ChatMessageCommandService chatMessageCommandService;
-    private final Validator validator;
 
 
-    public ChatWebSocketController(ChatMessageCommandService chatMessageCommandService, Validator validator) {
+    public ChatWebSocketController(ChatMessageCommandService chatMessageCommandService) {
         this.chatMessageCommandService = chatMessageCommandService;
-        this.validator = validator;
     }
 
     @MessageMapping("/chat/{doctorUuid}/{patientUuid}/send")
@@ -32,12 +27,8 @@ public class ChatWebSocketController {
                                ChatMessageRequest request,
                                SimpMessageHeaderAccessor headerAccessor) {
 
-        Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
-        String role = (String) headerAccessor.getSessionAttributes().get("role");
+        String role = (String) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("role");
 
-        // 👇 Debug temporal
-        System.out.println("userId: " + userId);
-        System.out.println("role: " + role);
 
         SendChatMessageCommand command = new SendChatMessageCommand(
                 doctorUuid,
