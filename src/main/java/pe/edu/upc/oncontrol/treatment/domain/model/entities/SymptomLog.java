@@ -14,7 +14,7 @@ import java.util.UUID;
 public class SymptomLog extends AuditableModel {
     @Getter
     @Column(name = "logged_at", nullable = false)
-    private LocalDateTime loggedAt;
+    private LocalDateTime loggedAt; //cuando ocurrrio el sintoma presente o pasado
 
     @Getter
     @Column(name = "symptom_type", nullable = false, length = 100)

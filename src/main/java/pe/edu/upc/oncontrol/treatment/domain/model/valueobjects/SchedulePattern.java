@@ -33,16 +33,17 @@ public class SchedulePattern {
         this.type = type;
         this.interval = interval;
 
-        if (totalOccurrences != null && totalOccurrences <= 0) {
-            throw new IllegalArgumentException("Occurrences must be greater than zero.");
+        if ((totalOccurrences == null && untilDate == null) || (totalOccurrences != null && untilDate != null)) {
+            throw new IllegalArgumentException("You must specify only one of the two: totalOccurrences or untilDate.");        }
+
+        if (totalOccurrences != null) {
+            this.totalOccurrences = totalOccurrences;
+            this.untilDate = estimateUntilDateFromOccurrences(type, interval, totalOccurrences);
+        } else {
+            this.untilDate = untilDate;
+            this.totalOccurrences = estimateOccurrencesFromUntilDate(type, interval, untilDate);
         }
 
-        if (untilDate != null && untilDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Limit date cannot be in the past.");
-        }
-
-        this.totalOccurrences = totalOccurrences;
-        this.untilDate = untilDate;
     }
 
     public boolean endsByOccurrences() {
@@ -73,4 +74,25 @@ public class SchedulePattern {
     public String toString() {
         return type + " every " + interval + (endsByOccurrences() ? " times" : endsByDate() ? " until " + untilDate : "");
     }
+
+    private LocalDate estimateUntilDateFromOccurrences(RecurrenceType type, int interval, int total) {
+        return switch (type) {
+            case DAILY -> LocalDate.now().plusDays((long) interval * (total - 1));
+            case WEEKLY -> LocalDate.now().plusWeeks((long) interval * (total - 1));
+            case EVERY_X_HOURS -> LocalDate.now().plusDays((long) Math.ceil((interval * (total - 1)) / 24.0));
+            case CUSTOM -> LocalDate.now().plusDays(30);
+        };
+    }
+
+    private int estimateOccurrencesFromUntilDate(RecurrenceType type, int interval, LocalDate untilDate) {
+        long days = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), untilDate);
+        return switch (type) {
+            case DAILY -> (int) (days / interval) + 1;
+            case WEEKLY -> (int) (days / (interval * 7)) + 1;
+            case EVERY_X_HOURS -> (int) ((days * 24.0) / interval) + 1;
+            case CUSTOM -> 10;
+        };
+    }
+
+
 }

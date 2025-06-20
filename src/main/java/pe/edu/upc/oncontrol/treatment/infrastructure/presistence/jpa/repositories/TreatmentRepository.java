@@ -13,4 +13,5 @@ public interface TreatmentRepository extends JpaRepository<Treatment, Long> {
     Optional<Treatment> findByExternalId(UUID externalId);
     boolean existsByDoctorProfileUuidAndPatientProfileUuidAndStatus(UUID doctorUuid, UUID patientUuid, TreatmentStatus status);
     long countByPatientProfileUuidAndStatus(UUID patientUuid, TreatmentStatus status);
+
 }

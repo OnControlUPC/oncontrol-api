@@ -5,20 +5,24 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.oncontrol.profile.application.acl.ProfileAccessAcl;
 import pe.edu.upc.oncontrol.treatment.domain.model.aggregates.Treatment;
+import pe.edu.upc.oncontrol.treatment.domain.model.commands.procedure.CancelProcedureCommand;
 import pe.edu.upc.oncontrol.treatment.domain.model.commands.procedure.CreateProcedureCommand;
-import pe.edu.upc.oncontrol.treatment.domain.model.commands.procedure.MarkProcedureComplianceCommand;
+import pe.edu.upc.oncontrol.treatment.domain.model.commands.procedure.StartProcedureCommand;
 import pe.edu.upc.oncontrol.treatment.domain.model.commands.procedure.UpdateProcedureCommand;
 import pe.edu.upc.oncontrol.treatment.domain.model.commands.symptom.CreateSymptomCommand;
 import pe.edu.upc.oncontrol.treatment.domain.model.commands.treatment.CreateTreatmentCommand;
 import pe.edu.upc.oncontrol.treatment.domain.model.commands.treatment.UpdateTreatmentCommand;
 import pe.edu.upc.oncontrol.treatment.domain.model.entities.Procedure;
+import pe.edu.upc.oncontrol.treatment.domain.model.entities.ProcedureExecution;
 import pe.edu.upc.oncontrol.treatment.domain.model.entities.SymptomLog;
 import pe.edu.upc.oncontrol.treatment.domain.model.valueobjects.*;
 import pe.edu.upc.oncontrol.treatment.domain.services.treatment.TreatmentCommandService;
+import pe.edu.upc.oncontrol.treatment.application.internal.ProcedureExecutionGenerator;
+import pe.edu.upc.oncontrol.treatment.infrastructure.presistence.jpa.repositories.ProcedureExecutionRepository;
 import pe.edu.upc.oncontrol.treatment.infrastructure.presistence.jpa.repositories.ProcedureRepository;
 import pe.edu.upc.oncontrol.treatment.infrastructure.presistence.jpa.repositories.TreatmentRepository;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,11 +30,15 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
     private final TreatmentRepository treatmentRepository;
     private final ProcedureRepository procedureRepository;
     private final ProfileAccessAcl profileAccessAcl;
+    private final ProcedureExecutionRepository procedureExecutionRepository;
+    private final ProcedureExecutionGenerator procedureExecutionGenerator;
 
-    public TreatmentCommandServiceImpl(TreatmentRepository treatmentRepository, ProcedureRepository procedureRepository, ProfileAccessAcl profileAccessAcl) {
+    public TreatmentCommandServiceImpl(TreatmentRepository treatmentRepository, ProcedureRepository procedureRepository, ProfileAccessAcl profileAccessAcl, ProcedureExecutionRepository procedureExecutionRepository, ProcedureExecutionGenerator procedureExecutionGenerator) {
         this.treatmentRepository = treatmentRepository;
         this.procedureRepository = procedureRepository;
         this.profileAccessAcl = profileAccessAcl;
+        this.procedureExecutionRepository = procedureExecutionRepository;
+        this.procedureExecutionGenerator = procedureExecutionGenerator;
     }
 
     @Override
@@ -40,7 +48,7 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
 
         // Validar acceso entre doctor y paciente
         if (!profileAccessAcl.isLinkActive(doctorUuid, patientUuid)) {
-            throw new IllegalStateException("El doctor no tiene acceso activo al paciente.");
+            throw new IllegalStateException("Doctor and patient profiles are not linked or the link is inactive.");
         }
 
         // Validar que el doctor no tenga ya un tratamiento activo con ese paciente
@@ -48,7 +56,7 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
                 doctorUuid, patientUuid, TreatmentStatus.ACTIVE
         );
         if (yaExiste) {
-            throw new IllegalStateException("Ya existe un tratamiento activo entre este doctor y paciente.");
+            throw new IllegalStateException("Treatment already exists for this doctor and patient.");
         }
 
         // Validar que el paciente no tenga más de 3 tratamientos activos
@@ -56,7 +64,7 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
                 patientUuid, TreatmentStatus.ACTIVE
         );
         if (tratamientosActivosPaciente >= 3) {
-            throw new IllegalStateException("El paciente ya tiene el número máximo de tratamientos activos.");
+            throw new IllegalStateException("Patient cannot have more than 3 active treatments.");
         }
 
         // Crear Treatment
@@ -70,15 +78,32 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
     }
 
     @Override
+    public void startProcedure(StartProcedureCommand command) {
+        Procedure procedure = procedureRepository.findById(command.procedureId())
+                .orElseThrow(()-> new EntityNotFoundException("Procedure not found."));
+
+        if(!procedure.getTreatment().getPatientProfileUuid().equals(command.patientProfileUuid())){
+            throw new AccessDeniedException("Only the doctor who created the treatment can start procedures.");
+        }
+        if(procedure.getProcedureStatus() != ProcedureStatus.PENDING){
+            throw new IllegalStateException("Procedure has already been started or cancelled.");
+        }
+        procedure.activate(command.startDateTime());
+        List<ProcedureExecution> executions = procedureExecutionGenerator.generateInitialExecutions(procedure);
+        procedureExecutionRepository.saveAll(executions);
+        procedureRepository.save(procedure);
+    }
+
+    @Override
     public void addProcedure(CreateProcedureCommand command) {
         UUID treatmentId = command.treatmentExternalId();
 
         Treatment treatment = treatmentRepository.findByExternalId(treatmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado."));
+                .orElseThrow(() -> new EntityNotFoundException("Treatment not found."));
 
         // Validación de propiedad: solo el doctor dueño puede agregar procedimientos
         if (!treatment.getDoctorProfileUuid().equals(command.doctorProfileUuid())) {
-            throw new AccessDeniedException("Solo el doctor asignado puede modificar el tratamiento.");
+            throw new AccessDeniedException("Only the doctor who created the treatment can add procedures.");
         }
 
         // Construcción del procedimiento
@@ -94,7 +119,6 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
         Procedure procedure = new Procedure(
                 description,
                 pattern,
-                command.firstExecutionTime(),
                 treatment
         );
 
@@ -114,37 +138,20 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
     }
 
     @Override
-    public void markProcedureCompliance(MarkProcedureComplianceCommand command) {
-        Procedure procedure = procedureRepository
-                .findByIdAndTreatment_PatientProfileUuid(command.procedureId(), command.patientProfileUuid())
-                .orElseThrow(() -> new EntityNotFoundException("El procedimiento no pertenece al paciente."));
-
-        Treatment treatment = procedure.getTreatment();
-        if (treatment.getStatus() != TreatmentStatus.ACTIVE) {
-            throw new IllegalStateException("El tratamiento no está activo.");
+    public void cancelProcedure(CancelProcedureCommand command) {
+        Procedure procedure = procedureRepository.findById(command.procedureId())
+                .orElseThrow(()-> new EntityNotFoundException("Procedure not found."));
+        if (!procedure.getTreatment().getDoctorProfileUuid().equals(command.donctorProfileUuid())){
+            throw new AccessDeniedException("Only the doctor who created the treatment can cancel procedures.");
         }
 
-        LocalDateTime completionDate = command.completionDate();
-        LocalDateTime scheduledDate = procedure.getScheduledAt();
-
-        boolean dentroDelMargen = !completionDate.isAfter(scheduledDate.plusDays(1));
-        boolean enTiempo = !completionDate.isAfter(scheduledDate);
-
-        if (procedure.getComplianceStatus() != ComplianceStatus.PENDING) {
-            throw new IllegalStateException("Este procedimiento ya fue completado o regularizado.");
+        if(procedure.getProcedureStatus() == ProcedureStatus.CANCELLED || procedure.getProcedureStatus() == ProcedureStatus.COMPLETED) {
+            throw new IllegalStateException("Procedure is already cancelled or completed.");
         }
 
-        if (enTiempo) {
-            procedure.markCompleted(completionDate);
-        } else if (dentroDelMargen) {
-            procedure.regularize(completionDate);
-        } else {
-            throw new IllegalStateException("El procedimiento no puede marcarse como cumplido fuera del margen permitido.");
-        }
-
+        procedure.cancel();
         procedureRepository.save(procedure);
     }
-
 
     @Override
     public void logSymptom(CreateSymptomCommand command) {
@@ -152,14 +159,14 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
         UUID patientProfileUuid = command.patientProfileUuid();
 
         Treatment treatment = treatmentRepository.findByExternalId(treatmentExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado."));
+                .orElseThrow(() -> new EntityNotFoundException("Treatment not found."));
 
         if (!treatment.getPatientProfileUuid().equals(patientProfileUuid)) {
-            throw new AccessDeniedException("El tratamiento no pertenece al paciente.");
+            throw new AccessDeniedException("Treatment does not belong to the patient.");
         }
 
         if (treatment.getStatus() != TreatmentStatus.ACTIVE) {
-            throw new IllegalStateException("No se pueden registrar síntomas en un tratamiento inactivo.");
+            throw new IllegalStateException("Cannot log symptoms for a non-active treatment.");
         }
 
         SymptomLog log = new SymptomLog(

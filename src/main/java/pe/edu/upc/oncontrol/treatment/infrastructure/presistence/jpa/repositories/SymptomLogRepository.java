@@ -19,5 +19,6 @@ public interface SymptomLogRepository extends JpaRepository<SymptomLog, Long> {
     List<SymptomLog> findLogsInRangeByPatient(@Param("patientUuid") UUID patientUuid,
                                               @Param("start") LocalDateTime start,
                                               @Param("end") LocalDateTime end);
+
 }
 
