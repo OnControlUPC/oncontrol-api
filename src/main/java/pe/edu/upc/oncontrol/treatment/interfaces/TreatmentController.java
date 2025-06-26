@@ -124,7 +124,7 @@ public class TreatmentController {
     }
 
     @GetMapping("/patient/{patientUuid}")
-    @PreAuthorize("hasAnyRole('ROLE_PATIENT', 'ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_PATIENT', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN')")
     public ResponseEntity<List<Treatment>> getByPatient(@PathVariable UUID patientUuid) {
         List<Treatment> treatments = treatmentQueryService.getActiveTreatmentsByPatient(patientUuid);
         return ResponseEntity.ok(treatments);

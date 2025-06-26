@@ -48,6 +48,7 @@ public class DoctorPatientLinkCommandServiceImpl implements DoctorPatientLinkCom
             if (currentStatus == LinkStatus.REJECTED) {
                 throw new IllegalStateException("This patient has already rejected the link and cannot be relinked.");
             }
+
             throw new IllegalStateException("Link already exists with status: " + currentStatus);
         }
 
@@ -124,13 +125,14 @@ public class DoctorPatientLinkCommandServiceImpl implements DoctorPatientLinkCom
     public void deleteLink(DeleteLinkCommand command) {
         DoctorPatientLink link = doctorPatientLinkRepository.findByExternalId(command.externalId())
                 .orElseThrow(() -> new EntityNotFoundException("Link not found"));
-
-        if (link.getStatus() == LinkStatus.DELETED) {
+        if(link.getStatus() == LinkStatus.PENDING){
+            doctorPatientLinkRepository.delete(link);
+        } else  if (link.getStatus() == LinkStatus.DELETED) {
             throw new IllegalStateException("Link is already deleted");
+        } else {
+            link.deleteLink();
+            doctorPatientLinkRepository.save(link);
         }
-
-        link.deleteLink();
-        doctorPatientLinkRepository.save(link);
     }
 
 }

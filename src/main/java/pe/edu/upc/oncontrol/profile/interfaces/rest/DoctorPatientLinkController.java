@@ -72,6 +72,14 @@ public class DoctorPatientLinkController {
         return ResponseEntity.ok(resources);
     }
 
+    @GetMapping("/links/{doctorUuid}/{patientUuid}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_PATIENT')")
+    public ResponseEntity<DoctorPatientLink> getLinkBetweenDoctorAndPatient(
+            @PathVariable UUID doctorUuid, @PathVariable UUID patientUuid) {
+        Optional<DoctorPatientLink> link = linkQueryService.findByDoctorUuidAndPatientUuid(doctorUuid, patientUuid);
+        return link.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
     @PatchMapping("/{externalId}/accept")
     @PreAuthorize("hasRole('ROLE_PATIENT')")
     public ResponseEntity<Void> accept(@PathVariable UUID externalId) {
