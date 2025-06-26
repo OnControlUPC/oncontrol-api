@@ -12,6 +12,4 @@ public interface DoctorPatientLinkQueryService {
     Optional<DoctorPatientLink> findByDoctorUuidAndPatientUuid(UUID doctorUuid, UUID patientUuid);
     List<DoctorPatientLink> findAllByDoctorUuidAndStatus(UUID doctorUuid, LinkStatus status);
     List<DoctorPatientLink> findAllByPatientUuidAndStatus(UUID patientUuid, LinkStatus status);
-    int countActiveLinksForDoctor(UUID doctorUuid);
-    boolean existsActiveLink(UUID doctorUuid, UUID patientUuid);
 }

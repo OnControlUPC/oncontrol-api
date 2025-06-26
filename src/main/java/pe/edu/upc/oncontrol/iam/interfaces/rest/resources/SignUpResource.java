@@ -13,7 +13,7 @@ public record SignUpResource(
         @Size(max=100, message = "Email cannot exceed 100 characters")
         String email,
         @NotBlank(message = "Password cannot be back")
-        @Size(min = 8, max = 120, message = "Password must be between 6 and 120 characters")
+        @Size(min = 8, max = 120, message = "Password must be between 8 and 120 characters")
         String password,
         Roles role
         ) {}

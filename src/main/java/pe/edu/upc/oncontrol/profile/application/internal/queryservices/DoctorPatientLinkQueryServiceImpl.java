@@ -60,26 +60,4 @@ public class DoctorPatientLinkQueryServiceImpl implements DoctorPatientLinkQuery
                 .orElse(List.of());
     }
 
-    @Override
-    public int countActiveLinksForDoctor(UUID doctorUuid) {
-        return doctorProfileRepository.findByUuid(doctorUuid)
-                .map(doctor -> doctorPatientLinkRepository.countByDoctorProfileAndStatus(doctor, LinkStatus.ACTIVE))
-                .orElse(0);
-    }
-
-    @Override
-    public boolean existsActiveLink(UUID doctorUuid, UUID patientUuid) {
-        Optional<DoctorProfile> doctorOpt = doctorProfileRepository.findByUuid(doctorUuid);
-        Optional<PatientProfile> patientOpt = patientProfileRepository.findByUuid(patientUuid);
-
-        if (doctorOpt.isEmpty() || patientOpt.isEmpty()) {
-            return false;
-        }
-
-        return doctorPatientLinkRepository.findByDoctorProfileAndPatientProfile(
-                        doctorOpt.get(), patientOpt.get()
-                )
-                .map(link -> link.getStatus() == LinkStatus.ACTIVE)
-                .orElse(false);
-    }
 }

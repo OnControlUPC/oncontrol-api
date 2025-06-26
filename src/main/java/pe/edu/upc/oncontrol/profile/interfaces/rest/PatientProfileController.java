@@ -52,7 +52,7 @@ public class PatientProfileController {
     }
 
     @GetMapping("/{uuid}")
-    @PreAuthorize("hasAnyRole('ROLE_PATIENT', 'ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_PATIENT', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN')")
     public ResponseEntity<PatientProfileViewResource> getByUuid(@PathVariable UUID uuid) {
         return patientProfileQueryService.findByUuid(uuid)
                 .map(profile -> ResponseEntity.ok(PatientProfileToResourceAssembler.toResourceFromEntity(profile)))
