@@ -97,6 +97,12 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
     @Override
     @Transactional
     public void markStatus(MarkAppointmentStatusCommand command) {
+
+        if (command.newStatus() == AppointmentStatus.CANCELLED_BY_DOCTOR ||
+                command.newStatus() == AppointmentStatus.CANCELLED_BY_PATIENT) {
+            throw new IllegalArgumentException("Use cancelByDoctor or cancelByPatient for cancelling appointments.");
+        }
+
         if (command.newStatus() != AppointmentStatus.COMPLETED &&
                 command.newStatus() != AppointmentStatus.MISSED) {
             throw new IllegalArgumentException("Only COMPLETED or MISSED can be assigned via this method.");

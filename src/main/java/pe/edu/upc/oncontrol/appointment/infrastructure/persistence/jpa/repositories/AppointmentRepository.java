@@ -14,21 +14,23 @@ import java.util.UUID;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
-    List<Appointment> findByPatientProfileUuidAndScheduledAtAfter(UUID patientUuid, LocalDateTime dateTime);
-    List<Appointment> findByDoctorProfileUuidAndScheduledAtAfter(UUID doctorUuid, LocalDateTime dateTime);
+    List<Appointment> findByPatientProfileUuidAndScheduledAt_ValueScheduledAfter(UUID patientUuid, LocalDateTime dateTime);
+    List<Appointment> findByDoctorProfileUuidAndScheduledAt_ValueScheduledAfter(UUID doctorUuid, LocalDateTime dateTime);
     Optional<Appointment> findByIdAndDoctorProfileUuid(Long id, UUID doctorUuid);
     Optional<Appointment> findByIdAndPatientProfileUuid(Long id, UUID patientUuid);
+    @Query("SELECT a FROM Appointment a WHERE a.doctorProfileUuid = :doctorProfileUuid AND a.patientProfileUuid = :patientProfileUuid")
+    List<Appointment> findByDoctorProfileUuidAndPatientProfileUuid(UUID doctorProfileUuid, UUID patientProfileUuid);
     List<Appointment> findByStatus(AppointmentStatus status);
     boolean existsByDoctorProfileUuidAndPatientProfileUuid(UUID doctorUuid, UUID patientUuid);
     @Query("""
         SELECT a FROM Appointment a
         WHERE a.status = 'SCHEDULED'
-          AND a.meetingUrl IS NULL
-          AND a.locationName IS NULL
-          AND a.scheduledAt BETWEEN :from AND :to
+          AND a.meetingUrl.url IS NULL
+          AND a.location.nameLocation IS NULL
+          AND a.scheduledAt.valueScheduled BETWEEN :from AND :to
     """)
     List<Appointment> findVirtualAppointmentsWithoutMeetingUrl(@Param("from") LocalDateTime from,
                                                                @Param("to") LocalDateTime to);
-    List<Appointment> findByStatusAndScheduledAtBefore(AppointmentStatus status, LocalDateTime now);
+    List<Appointment> findByStatusAndScheduledAt_ValueScheduledBefore(AppointmentStatus status, LocalDateTime now);
 
 }

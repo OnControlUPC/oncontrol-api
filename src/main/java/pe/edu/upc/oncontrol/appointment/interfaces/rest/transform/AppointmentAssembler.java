@@ -26,21 +26,13 @@ public class AppointmentAssembler {
     public AppointmentDetail toDetail(Appointment appointment) {
         return new AppointmentDetail(
                 appointment.getId(),
-                appointment.getScheduledAt().getValue(),
+                appointment.getScheduledAt() != null ? appointment.getScheduledAt().getValueScheduled() : null,
                 appointment.getStatus().name(),
-                appointment.getLocation() != null ? appointment.getLocation().getName() : null,
+                appointment.getLocation() != null ? appointment.getLocation().getNameLocation() : null,
                 appointment.getLocation() != null ? appointment.getLocation().getMapsUrl() : null,
-                appointment.getMeetingUrl() != null ? appointment.getMeetingUrl().getValue() : null
-        );
-    }
-
-    public AppointmentCalendarItem toCalendarItem(Appointment appointment, String title) {
-        return new AppointmentCalendarItem(
-                appointment.getId(),
-                title,
-                appointment.getScheduledAt().getValue(),
-                appointment.getStatus().name(),
-                "APPOINTMENT"
+                appointment.getMeetingUrl() != null ? appointment.getMeetingUrl().getUrl() : null,
+                appointment.getPatientProfileUuid().toString(),
+                appointment.getDoctorProfileUuid().toString()
         );
     }
 

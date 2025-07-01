@@ -1,13 +1,21 @@
 package pe.edu.upc.oncontrol.appointment.domain.model.valueobject;
 
+import jakarta.persistence.Embeddable;
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
+@Getter
+@Embeddable
 public class MeetingUrl implements Serializable {
 
-    private final String url;
+    private String url;
+
+    protected MeetingUrl() {
+    }
 
     public MeetingUrl(String url) {
         if (url != null && !url.isBlank()) {
@@ -23,9 +31,6 @@ public class MeetingUrl implements Serializable {
         this.url = url != null ? url.trim() : null;
     }
 
-    public String getValue() {
-        return url;
-    }
 
     public boolean isPresent() {
         return url != null && !url.isBlank();

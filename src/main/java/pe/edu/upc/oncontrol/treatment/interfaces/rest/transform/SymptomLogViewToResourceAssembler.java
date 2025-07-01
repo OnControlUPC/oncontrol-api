@@ -13,6 +13,7 @@ public class SymptomLogViewToResourceAssembler {
                 symptomLog.getId(),
                 symptomLog.getLoggedAt(),
                 symptomLog.getSymptomType(),
+                symptomLog.getSeverity().name(),
                 symptomLog.getNotes(),
                 symptomLog.getTreatment().getExternalId(),
                 symptomLog.getCreatedAt()

@@ -1,5 +1,6 @@
 package pe.edu.upc.oncontrol.appointment.domain.model.valueobject;
 
+import jakarta.persistence.Embeddable;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -7,37 +8,38 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 
+@Getter
+@Embeddable
 public class ScheduledAt implements Serializable {
 
-    private final LocalDateTime value;
+    private LocalDateTime valueScheduled;
 
-    public ScheduledAt(LocalDateTime value) {
-        if (value == null) {
+    protected ScheduledAt() {
+    }
+
+    public ScheduledAt(LocalDateTime valueScheduled) {
+        if (valueScheduled == null) {
             throw new IllegalArgumentException("Scheduled date cannot be null.");
         }
-        if (value.isBefore(LocalDateTime.now())) {
+        if (valueScheduled.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Scheduled date must be in the future.");
         }
-        this.value = value;
+        this.valueScheduled = valueScheduled;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ScheduledAt that)) return false;
-        return Objects.equals(value, that.value);
+        return Objects.equals(valueScheduled, that.valueScheduled);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    public LocalDateTime getValue() {
-        return value;
+        return Objects.hash(valueScheduled);
     }
 
     public boolean isBefore(LocalDateTime other) {
-        return value.isBefore(other);
+        return valueScheduled.isBefore(other);
     }
 }

@@ -51,20 +51,27 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
             throw new IllegalStateException("Doctor and patient profiles are not linked or the link is inactive.");
         }
 
-        // Validar que el doctor no tenga ya un tratamiento activo con ese paciente
-        boolean yaExiste = treatmentRepository.existsByDoctorProfileUuidAndPatientProfileUuidAndStatus(
-                doctorUuid, patientUuid, TreatmentStatus.ACTIVE
-        );
-        if (yaExiste) {
-            throw new IllegalStateException("Treatment already exists for this doctor and patient.");
-        }
+//        // Validar que el doctor no tenga ya un tratamiento activo con ese paciente
+//        boolean yaExiste = treatmentRepository.existsByDoctorProfileUuidAndPatientProfileUuidAndStatus(
+//                doctorUuid, patientUuid, TreatmentStatus.ACTIVE
+//        );
+//        if (yaExiste) {
+//            throw new IllegalStateException("Treatment already exists for this doctor and patient.");
+//        }
 
-        // Validar que el paciente no tenga más de 3 tratamientos activos
+        // Validar que el paciente no tenga más de 6 tratamientos activos
         long tratamientosActivosPaciente = treatmentRepository.countByPatientProfileUuidAndStatus(
                 patientUuid, TreatmentStatus.ACTIVE
         );
-        if (tratamientosActivosPaciente >= 3) {
+        if (tratamientosActivosPaciente >= 6) {
             throw new IllegalStateException("Patient cannot have more than 3 active treatments.");
+        }
+        // Validar que el doctor no tenga más de 3 tratamientos activos con el mismo paciente
+        long tratamientosActivosConPaciente = treatmentRepository.countByDoctorProfileUuidAndPatientProfileUuidAndStatus(
+                doctorUuid, patientUuid, TreatmentStatus.ACTIVE
+        );
+        if (tratamientosActivosConPaciente >= 3) {
+            throw new IllegalStateException("Doctor cannot have more than 3 active treatments with the same patient.");
         }
 
         // Crear Treatment

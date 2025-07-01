@@ -25,17 +25,17 @@ public class Appointment extends AuditableAbstractAggregateRoot<Appointment> {
     @Column(name = "patient_profile_uuid", nullable = false)
     private UUID patientProfileUuid;
 
-    @Column(name = "scheduled_at", nullable = false)
-    private LocalDateTime scheduledAt;
+    @Getter
+    @Embedded
+    private ScheduledAt scheduledAt;
 
-    @Column(name = "meeting_url")
-    private String meetingUrl;
+    @Getter
+    @Embedded
+    private Location location;
 
-    @Column(name = "location_name")
-    private String locationName;
-
-    @Column(name = "location_maps_url")
-    private String locationMapsUrl;
+    @Getter
+    @Embedded
+    private MeetingUrl meetingUrl;
 
     @Getter
     @Enumerated(EnumType.STRING)
@@ -61,24 +61,11 @@ public class Appointment extends AuditableAbstractAggregateRoot<Appointment> {
 
         this.doctorProfileUuid = doctorProfileUuid;
         this.patientProfileUuid = patientProfileUuid;
-        this.scheduledAt = scheduledAt.getValue();
-        this.locationName = hasLocation ? location.getName() : null;
-        this.locationMapsUrl = hasLocation ? location.getMapsUrl() : null;
-        this.meetingUrl = hasMeeting ? meetingUrl.getValue() : null;
+        this.scheduledAt = scheduledAt;
+        this.location = location;
+        this.meetingUrl = meetingUrl;
         this.status = AppointmentStatus.SCHEDULED;
-    }
 
-
-    public ScheduledAt getScheduledAt() {
-        return new ScheduledAt(this.scheduledAt);
-    }
-
-    public Location getLocation() {
-        return new Location(this.locationName, this.locationMapsUrl);
-    }
-
-    public MeetingUrl getMeetingUrl() {
-        return new MeetingUrl(this.meetingUrl);
     }
 
     public void changeModality(Location newLocation, MeetingUrl newMeetingUrl) {
@@ -89,18 +76,16 @@ public class Appointment extends AuditableAbstractAggregateRoot<Appointment> {
             throw new IllegalArgumentException("Must provide a location or virtual meeting link.");
         }
 
-        this.locationName = hasLocation ? newLocation.getName() : null;
-        this.locationMapsUrl = hasLocation ? newLocation.getMapsUrl() : null;
-        this.meetingUrl = hasMeeting ? newMeetingUrl.getValue() : null;
+        this.location = hasLocation ? newLocation : null;
+        this.meetingUrl = hasMeeting ? newMeetingUrl : null;
     }
 
     public void reschedule(ScheduledAt newDateTime, Location newLocation) {
         if (this.status != AppointmentStatus.SCHEDULED) {
             throw new IllegalStateException("Only scheduled appointments can be rescheduled.");
         }
-        this.scheduledAt = newDateTime.getValue();
-        this.locationName = newLocation.getName();
-        this.locationMapsUrl = newLocation.getMapsUrl();
+        this.scheduledAt = newDateTime;
+        this.location = newLocation;
     }
 
     public void cancelByDoctor() {

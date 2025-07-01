@@ -6,8 +6,9 @@ import java.util.UUID;
 
 public record SymptomLogViewResource(
         Long id,
-        LocalDateTime loggedAt, //Hora en la que sintio el sintoma
+        LocalDateTime loggedAt,
         String symptomType,
+        String severity,
         String notes,
         UUID treatmentId,
         Date createdAt

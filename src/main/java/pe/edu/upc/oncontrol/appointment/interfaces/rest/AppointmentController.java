@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.oncontrol.appointment.domain.model.aggregates.Appointment;
 import pe.edu.upc.oncontrol.appointment.domain.model.commands.CancelAppointmentByDoctorCommand;
 import pe.edu.upc.oncontrol.appointment.domain.model.commands.CancelAppointmentByPatientCommand;
-import pe.edu.upc.oncontrol.appointment.domain.model.queries.AppointmentCalendarItem;
+import pe.edu.upc.oncontrol.appointment.domain.model.commands.MarkAppointmentStatusCommand;
 import pe.edu.upc.oncontrol.appointment.domain.services.AppointmentCommandService;
 import pe.edu.upc.oncontrol.appointment.domain.services.AppointmentQueryService;
 import pe.edu.upc.oncontrol.appointment.interfaces.rest.resources.AppointmentDetail;
@@ -48,19 +48,38 @@ public class AppointmentController {
         appointmentCommandService.createAppointment(command);
     }
 
+    @GetMapping("/doctor/{patientUuid}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public List<AppointmentDetail> getAppointmentsForDoctorAndPatient(
+            @PathVariable UUID patientUuid, HttpServletRequest request) {
+        Long userId = tokenContextFacade.extractUserIdFromToken(request);
+        UUID doctorProfileUuid = profileAccessAcl.getDoctorProfileUuidByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Doctor profile not found"));
+        return appointmentQueryService.getAppointmentsForDoctorAndPatient(doctorProfileUuid, patientUuid)
+                .stream()
+                .map(appointmentAssembler::toDetail)
+                .toList();
+    }
+
     @GetMapping("/calendar")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PATIENT')")
-    public List<AppointmentCalendarItem> getCalendar(HttpServletRequest request) {
+    public List<AppointmentDetail> getCalendar(HttpServletRequest request) {
         String role = tokenContextFacade.extractUserRoleFromRequest(request);
         Long userId = tokenContextFacade.extractUserIdFromToken(request);
         if (Objects.equals(role, "ROLE_ADMIN")) {
             UUID doctorProfileUuid = profileAccessAcl.getDoctorProfileUuidByUserId(userId)
                     .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
-            return appointmentQueryService.getAppointmentsForDoctor(doctorProfileUuid);
+            return appointmentQueryService.getAppointmentsForDoctor(doctorProfileUuid)
+                    .stream()
+                    .map(appointmentAssembler::toDetail)
+                    .toList();
         } else {
             UUID patientProfileUuid = profileAccessAcl.getPatientProfileUuidByUserId(userId)
                     .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
-            return appointmentQueryService.getAppointmentsForPatient(patientProfileUuid);
+            return appointmentQueryService.getAppointmentsForPatient(patientProfileUuid)
+                    .stream()
+                    .map(appointmentAssembler::toDetail)
+                    .toList();
         }
     }
 
@@ -84,7 +103,21 @@ public class AppointmentController {
         return appointmentAssembler.toDetail(appointment);
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/mark")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public void markStatus(@RequestBody MarkAppointmentStatusCommand command, HttpServletRequest request) {
+        Long userId = tokenContextFacade.extractUserIdFromToken(request);
+        UUID doctorProfileUuid = profileAccessAcl.getDoctorProfileUuidByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Doctor profile not found"));
+
+        if (!Objects.equals(command.doctorProfileUuid(), doctorProfileUuid)) {
+            throw new AccessDeniedException("You are not authorized to update this appointment.");
+        }
+
+        appointmentCommandService.markStatus(command);
+    }
+
+    @DeleteMapping("/{id}/delete")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PATIENT')")
     public void cancel(@PathVariable Long id, HttpServletRequest request) {
         String role = tokenContextFacade.extractUserRoleFromRequest(request);
@@ -102,6 +135,7 @@ public class AppointmentController {
             throw new AccessDeniedException("Role not allowed to cancel appointments.");
         }
     }
+
 
 
 }

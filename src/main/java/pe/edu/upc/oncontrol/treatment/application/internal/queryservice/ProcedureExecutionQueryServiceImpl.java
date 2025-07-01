@@ -1,4 +1,4 @@
-package pe.edu.upc.oncontrol.treatment.application.internal.commandservice;
+package pe.edu.upc.oncontrol.treatment.application.internal.queryservice;
 
 import org.springframework.stereotype.Service;
 import pe.edu.upc.oncontrol.treatment.domain.model.entities.ProcedureExecution;
