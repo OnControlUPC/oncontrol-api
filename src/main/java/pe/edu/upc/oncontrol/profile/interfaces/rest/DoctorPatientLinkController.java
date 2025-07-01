@@ -133,5 +133,16 @@ public class DoctorPatientLinkController {
         return ResponseEntity.ok(resources);
     }
 
+    @GetMapping("/patient/{patientUuid}/active")
+    @PreAuthorize("hasAnyRole('ROLE_PATIENT', 'ROLE_ADMIN')")
+    public ResponseEntity<List<DoctorPatientLinkViewResource>> getActiveLinksByPatient(@PathVariable UUID patientUuid){
+        List<DoctorPatientLink> activeLinks = linkQueryService.findAllByPatientUuidAndStatus(patientUuid, LinkStatus.ACTIVE);
+
+        List<DoctorPatientLinkViewResource> resources = activeLinks.stream()
+                .map(DoctorPatientLinkToResourceAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
+    }
+
 
 }

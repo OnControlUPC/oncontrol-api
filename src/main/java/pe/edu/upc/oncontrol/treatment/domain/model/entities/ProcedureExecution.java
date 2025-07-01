@@ -50,7 +50,7 @@ public class ProcedureExecution extends AuditableModel {
 
     public void markMissedIfExpired(LocalDateTime now){
         if(status == ExecutionStatus.PENDING && window.isTooLate(now)) {
-           this.status = ExecutionStatus.MISSED;
+            this.status = ExecutionStatus.MISSED;
         }
     }
 

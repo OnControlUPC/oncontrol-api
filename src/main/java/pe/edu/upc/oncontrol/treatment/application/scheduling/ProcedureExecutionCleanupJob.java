@@ -53,5 +53,5 @@ public class ProcedureExecutionCleanupJob {
         procedureRepository.saveAll(activeProcedures);
     }
 
-    
+
 }

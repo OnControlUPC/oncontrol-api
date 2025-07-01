@@ -8,6 +8,8 @@ public record AppointmentDetail(
         String status,
         String locationName,
         String locationMapsUrl,
-        String meetingUrl
+        String meetingUrl,
+        String patientProfileUuid,
+        String doctorProfileUuid
 ) {
 }

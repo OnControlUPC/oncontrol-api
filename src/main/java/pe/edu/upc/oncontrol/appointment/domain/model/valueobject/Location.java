@@ -1,22 +1,23 @@
 package pe.edu.upc.oncontrol.appointment.domain.model.valueobject;
 
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
+@Getter
+@Embeddable
 public class Location implements Serializable {
 
-    private final String name;
-    private final String mapsUrl;
+    private String nameLocation;
+    private String mapsUrl;
+
+    protected Location() {}
 
     public Location(String name, String mapsUrl) {
-        if ((name == null || name.isBlank()) && (mapsUrl == null || mapsUrl.isBlank())) {
-            throw new IllegalArgumentException("Location must have at least a name or a mapsUrl.");
-        }
-
         if (mapsUrl != null && !mapsUrl.isBlank()) {
             try {
                 URI uri = new URI(mapsUrl);
@@ -28,32 +29,24 @@ public class Location implements Serializable {
             }
         }
 
-        this.name = name != null ? name.trim() : null;
+        this.nameLocation = name != null ? name.trim() : null;
         this.mapsUrl = mapsUrl != null ? mapsUrl.trim() : null;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getMapsUrl() {
-        return mapsUrl;
-    }
-
     public boolean isPresent(){
-        return (name != null && !name.isBlank()) || (mapsUrl != null && !mapsUrl.isBlank());
+        return (nameLocation != null && !nameLocation.isBlank()) || (mapsUrl != null && !mapsUrl.isBlank());
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Location that)) return false;
-        return Objects.equals(name, that.name) &&
+        return Objects.equals(nameLocation, that.nameLocation) &&
                 Objects.equals(mapsUrl, that.mapsUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, mapsUrl);
+        return Objects.hash(nameLocation, mapsUrl);
     }
 }

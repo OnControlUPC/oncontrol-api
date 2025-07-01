@@ -55,7 +55,8 @@ public class TreatmentQueryServiceImpl implements TreatmentQueryService {
     public List<Treatment> getActiveTreatmentsByDoctor(UUID doctorProfileUuid) {
         return treatmentRepository.findAll().stream()
                 .filter(t -> t.getDoctorProfileUuid().equals(doctorProfileUuid)
-                        && t.getStatus() == TreatmentStatus.ACTIVE)
+                )
+                //&& t.getStatus() == TreatmentStatus.ACTIVE)
                 .toList();
     }
 

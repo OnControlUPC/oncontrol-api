@@ -4,7 +4,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upc.oncontrol.appointment.domain.model.aggregates.Appointment;
-import pe.edu.upc.oncontrol.appointment.domain.model.valueobject.Location;
 import pe.edu.upc.oncontrol.appointment.domain.model.valueobject.MeetingUrl;
 import pe.edu.upc.oncontrol.appointment.infrastructure.persistence.jpa.repositories.AppointmentRepository;
 
@@ -32,7 +31,7 @@ public class VirtualMeetingScheduler {
         List<Appointment> upcoming = repository.findVirtualAppointmentsWithoutMeetingUrl(from, to);
 
         for (Appointment appointment : upcoming) {
-            String formatted = appointment.getScheduledAt().getValue()
+            String formatted = appointment.getScheduledAt().getValueScheduled()
                     .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
 
             String generatedUrl = "https://meet.jit.si/oncoapp-" + formatted + "-" + UUID.randomUUID();

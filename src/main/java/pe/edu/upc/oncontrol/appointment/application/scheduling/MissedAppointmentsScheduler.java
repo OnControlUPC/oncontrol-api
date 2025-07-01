@@ -23,7 +23,7 @@ public class MissedAppointmentsScheduler {
     public void markAppointmentsAsMissed() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(1);
 
-        List<Appointment> expiredAppointments = appointmentRepository.findByStatusAndScheduledAtBefore(
+        List<Appointment> expiredAppointments = appointmentRepository.findByStatusAndScheduledAt_ValueScheduledBefore(
                 AppointmentStatus.SCHEDULED, cutoff
         );
 

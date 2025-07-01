@@ -34,7 +34,7 @@ public class ProcedureExecutionController {
     }
 
     @PatchMapping("/{executionId}/complete")
-    @PreAuthorize("hasRole('ROLE_PATINET')")
+    @PreAuthorize("hasRole('ROLE_PATIENT')")
     public ResponseEntity<Void> markExecutionCompleted(@PathVariable Long executionId,
                                                        @Valid @RequestBody MarkProcedureExecutionResource resource){
         MarkProcedureExecutionCommand command = markProcedureExecutionCommandAssembler.toCommand(executionId, resource);

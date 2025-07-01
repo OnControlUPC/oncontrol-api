@@ -3,7 +3,6 @@ package pe.edu.upc.oncontrol.appointment.application.internal.queryservices;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.oncontrol.appointment.domain.model.aggregates.Appointment;
-import pe.edu.upc.oncontrol.appointment.domain.model.queries.AppointmentCalendarItem;
 import pe.edu.upc.oncontrol.appointment.domain.services.AppointmentQueryService;
 import pe.edu.upc.oncontrol.appointment.infrastructure.persistence.jpa.repositories.AppointmentRepository;
 
@@ -19,33 +18,19 @@ public class AppointmentQueryServiceImpl implements AppointmentQueryService {
     public AppointmentQueryServiceImpl(AppointmentRepository appointmentRepository) {
         this.appointmentRepository = appointmentRepository;
     }
-
     @Override
-    public List<AppointmentCalendarItem> getAppointmentsForPatient(UUID patientProfileUuid) {
-        return appointmentRepository.findByPatientProfileUuidAndScheduledAtAfter(patientProfileUuid, LocalDateTime.now())
-                .stream()
-                .map(appointment -> new AppointmentCalendarItem(
-                        appointment.getId(),
-                        "Appointment with doctor",
-                        appointment.getScheduledAt().getValue(),
-                        appointment.getStatus().name(),
-                        "APPOINTMENT"
-                ))
-                .toList();
+    public List<Appointment> getAppointmentsForPatient(UUID patientProfileUuid) {
+        return appointmentRepository.findByPatientProfileUuidAndScheduledAt_ValueScheduledAfter(patientProfileUuid, LocalDateTime.now());
     }
 
     @Override
-    public List<AppointmentCalendarItem> getAppointmentsForDoctor(UUID doctorProfileUuid) {
-        return appointmentRepository.findByDoctorProfileUuidAndScheduledAtAfter(doctorProfileUuid, LocalDateTime.now())
-                .stream()
-                .map(appointment -> new AppointmentCalendarItem(
-                        appointment.getId(),
-                        "Appointment with patient",
-                        appointment.getScheduledAt().getValue(),
-                        appointment.getStatus().name(),
-                        "APPOINTMENT"
-                ))
-                .toList();
+    public List<Appointment> getAppointmentsForDoctorAndPatient(UUID doctorProfileUuid, UUID patientProfileUuid) {
+        return appointmentRepository.findByDoctorProfileUuidAndPatientProfileUuid(doctorProfileUuid, patientProfileUuid);
+    }
+
+    @Override
+    public List<Appointment> getAppointmentsForDoctor(UUID doctorProfileUuid) {
+        return appointmentRepository.findByDoctorProfileUuidAndScheduledAt_ValueScheduledAfter(doctorProfileUuid, LocalDateTime.now());
     }
 
     @Override
