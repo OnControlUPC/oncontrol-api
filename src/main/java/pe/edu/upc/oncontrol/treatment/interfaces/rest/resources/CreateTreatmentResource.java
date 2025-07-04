@@ -10,7 +10,6 @@ public record CreateTreatmentResource(
         @Size(max = 100)
         String title,
         @NotNull
-        @FutureOrPresent
         LocalDate startDate,
         @Future
         LocalDate endDate,

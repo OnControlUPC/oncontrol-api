@@ -22,6 +22,7 @@ import pe.edu.upc.oncontrol.treatment.infrastructure.presistence.jpa.repositorie
 import pe.edu.upc.oncontrol.treatment.infrastructure.presistence.jpa.repositories.ProcedureRepository;
 import pe.edu.upc.oncontrol.treatment.infrastructure.presistence.jpa.repositories.TreatmentRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +46,16 @@ public class TreatmentCommandServiceImpl implements TreatmentCommandService {
     public UUID createTreatment(CreateTreatmentCommand command) {
         UUID doctorUuid = command.doctorProfileUuid();
         UUID patientUuid = command.patientProfileUuid();
+
+        LocalDate today = LocalDate.now();
+        if (command.startDate().isBefore(today.minusDays(3))) {
+            throw new IllegalStateException("The start date cannot be earlier than 3 days ago.");
+        }
+
+        // Validar que la fecha de inicio no sea mayor a la fecha de fin
+        if (command.startDate().isAfter(command.endDate())) {
+            throw new IllegalStateException("The start date cannot be after the end date.");
+        }
 
         // Validar acceso entre doctor y paciente
         if (!profileAccessAcl.isLinkActive(doctorUuid, patientUuid)) {
