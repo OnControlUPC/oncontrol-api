@@ -107,6 +107,14 @@ public class TreatmentController {
         return ResponseEntity.ok(resources);
     }
 
+    @GetMapping("/symptom-logs/{symptomId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PATIENT')")
+    public ResponseEntity<SymptomLogViewResource> getSymptomLogById(
+            @PathVariable Long symptomId){
+        return treatmentQueryService.getSymptomLogById(symptomId)
+                .map(symptomLog -> ResponseEntity.ok(symptomLogViewToResourceAssembler.toResource(symptomLog)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping("/{externalId}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PATIENT', 'ROLE_SUPER_ADMIN')")

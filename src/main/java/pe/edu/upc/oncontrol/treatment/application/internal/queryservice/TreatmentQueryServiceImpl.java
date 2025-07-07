@@ -79,6 +79,11 @@ public class TreatmentQueryServiceImpl implements TreatmentQueryService {
     }
 
     @Override
+    public Optional<SymptomLog> getSymptomLogById(Long symptomLogId) {
+        return symptomLogRepository.findById(symptomLogId);
+    }
+
+    @Override
     public List<ProcedureExecutionForecast> getForecastForTreatment(UUID treatmentExternalId) {
         Treatment treatment = treatmentRepository.findByExternalId(treatmentExternalId)
                 .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado."));

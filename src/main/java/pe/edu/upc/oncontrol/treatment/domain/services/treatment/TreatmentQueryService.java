@@ -17,6 +17,7 @@ public interface TreatmentQueryService {
     List<Procedure> getPendingProceduresByPatient(UUID patientProfileUuid);
     List<SymptomLog> getSymptomLogsByTreatment(UUID treatmentExternalId);
     List<SymptomLog> getSymptomLogsByPatientInRange(UUID patientProfileUuid, LocalDateTime start, LocalDateTime end);
+    Optional<SymptomLog> getSymptomLogById(Long symptomLogId);
     List<ProcedureExecutionForecast> getForecastForTreatment(UUID treatmentExternalId);
     List<Procedure> getProceduresByExternalId(UUID treatmentExternalId);
 }
