@@ -3,6 +3,7 @@ package pe.edu.upc.oncontrol.communication.interfaces.rest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.oncontrol.billing.application.acl.SubscriptionAcl;
 import pe.edu.upc.oncontrol.billing.domain.model.aggregates.Plan;
@@ -28,6 +29,7 @@ public class ChatMessageQueryController {
     }
 
     @GetMapping("/{doctorUuid}/{patientUuid}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PATIENT')")
     public ResponseEntity<List<ChatMessage>> getConversation(
             @PathVariable UUID doctorUuid,
             @PathVariable UUID patientUuid,

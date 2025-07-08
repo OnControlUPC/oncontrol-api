@@ -105,8 +105,16 @@ public class TreatmentQueryServiceImpl implements TreatmentQueryService {
             List<LocalDateTime> expectedDates = procedureExecutionGenerator.generateScheduledDatesFor(procedure);
 
             for (LocalDateTime scheduled : expectedDates) {
-                ExecutionStatus status = executedMap.getOrDefault(scheduled, ExecutionStatus.PENDING);
+                ProcedureExecution execution = realExecutions.stream()
+                        .filter(e -> e.getWindow().getScheduledAt().equals(scheduled))
+                        .findFirst()
+                        .orElse(null);
+
+                ExecutionStatus status = execution != null ? execution.getStatus() : ExecutionStatus.PENDING;
+                Long executionId = execution != null ? execution.getId() : null;
+
                 allPredictions.add(new ProcedureExecutionForecast(
+                        executionId,
                         procedure.getDescription().getValue(),
                         scheduled,
                         status
