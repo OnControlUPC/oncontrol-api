@@ -17,5 +17,4 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
             UUID patientUuid,
             Pageable pageable
     );
-
 }
